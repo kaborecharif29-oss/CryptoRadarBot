@@ -1,13 +1,14 @@
 import os
+import time
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import json
 import logging
-import re
 import urllib.request
+import urllib.parse
 from datetime import datetime
 
-# --- SERVEUR WEB BINDING PORT POUR RENDER ---
+# --- SERVEUR WEB HEALTH CHECK POUR RENDER ---
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -19,31 +20,33 @@ def run_dummy_server():
     server = HTTPServer(("0.0.0.0", port), SimpleHTTPRequestHandler)
     server.serve_forever()
 
+# Lancement du serveur Web en arrière-plan
 threading.Thread(target=run_dummy_server, daemon=True).start()
 
-# --- VOS IDENTIFIANTS ET CONFIGURATION ---
-PARTIE_1 = "8688"  # Remplace par ta vraie partie 1 si besoin
-PARTIE_2 = "AAHe"  # Remplace par ta vraie partie 2 si besoin
-JETON = PARTIE_1 + PARTIE_2
+# --- CONFIGURATION IDENTIFIANTS TELEGRAM ---
+JETON = "8688412231:AAHe_6a8IzSRpzxAXkxjtYh1T68CfMIvBMU"
+ID_CHAT = "87687"  # Assure-toi de remplacer par ton vrai ID Chat si besoin
 
-ID_CHAT = "87687"  # Remplace par ton vrai ID Chat si besoin
 URL_DE_BASE = f"https://api.telegram.org/bot{JETON}"
-TAUX_USD_FCFA = 600
 
 def envoyer_signal(message, cible_chat_id=ID_CHAT):
-    texte_encode = urllib.parse.quote(message) if hasattr(urllib, 'parse') else urllib.request.quote(message)
+    texte_encode = urllib.parse.quote(message)
     url = f"{URL_DE_BASE}/sendMessage?chat_id={cible_chat_id}&text={texte_encode}&parse_mode=HTML"
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         with urllib.request.urlopen(req) as response:
-            pass
+            if response.status == 200:
+                print("Message envoyé avec succès !")
     except Exception as e:
         print(f"Erreur d'envoi Telegram : {e}")
 
 def main():
     print("🤖 CryptoRadar Activé")
-    # Ajoute ici le reste de ta boucle de calcul / signaux
-    envoyer_signal("🚀 CryptoRadar est désormais en ligne 24/7 sur Render !")
+    envoyer_signal("🚀 CryptoRadar est désormais actif et en ligne 24/7 sur Render !")
 
 if __name__ == "__main__":
     main()
+    
+    # Boucle infinie pour maintenir le service actif 24/7 sur Render
+    while True:
+        time.sleep(3600)  # Maintient le processus ouvert
